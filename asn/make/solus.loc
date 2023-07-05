@@ -1,0 +1,75 @@
+CC=mpicc
+CFLAGS=-std=c11 # 2017-08: the latest standard
+CFLAGS+=-W -Wall
+CFLAGS+=-O0 -g -ggdb
+CFLAGS+=-MMD  # generate dependency .d files
+CFLAGS+=-I./inc
+LDLIBS=-lm
+job=solus
+sdir=ext
+srcs=$(job).c $(shell ls ext/*.c)
+objs=$(srcs:.c=.o)
+deps=$(objs:.o=.d)
+profile=1
+ifeq ($(profile), 1)
+CFLAGS+=-pg
+LDFLAGS+=-pg
+endif
+
+$(job) : $(objs)
+-include $(deps)
+# %: %.o # all targerts for all objects
+# obj/%.o: %.c # to be tested
+trgs=$(job)
+
+N=2
+C=2
+X=4
+W=0
+M=1
+.PHONY: run
+run :
+	mpirun -n $N ./$(job) -c $C -x $X -w $W \
+		-i ./strainer-p32-ZN.ssv \
+		-o $(job)-n$N-x$X-w$W.ssv \
+		2>$(job).err
+
+.PHONY: clean
+clean:
+	$(RM) $(objs)
+	$(RM) $(deps)
+
+# cscope.out
+cscope.out: $(srcs)
+	cscope -f $@ -I$(CURDIR)/inc -bq $^
+
+# ctags
+tags: $(srcs)
+	ctags -f $@ -R $(CURDIR) $^
+
+ifeq ($(profile), 1)
+
+gmon.out: $(job)
+
+gprof.out: gmon.out
+	gprof $(CURDIR)/$(job) > $@
+
+.PHONY: prof
+prof: gprof.out
+endif
+
+.PHONY: more
+more: cscope.out tags prof
+
+.PHONY: cleanall
+cleanall:
+	$(RM) $(trgs)
+	$(RM) $(objs)
+	$(RM) $(deps)
+	$(RM) $(job).err $(job)-*
+	$(RM) cscope.out cscope.out.in cscope.out.po
+	$(RM) tags
+ifeq ($(profile), 1)
+	$(RM) gmon.out
+	$(RM) gprof.out
+endif

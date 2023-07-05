@@ -1,0 +1,13 @@
+2017:09:27 11:26
+cifdir:cif baits: FE MN cloud size: 32
+Total cif files: 3 
+Scanned cif files: 3 Found baits: 15 
+2017:09:27 11:26
+Distribution maxdst/ctr: count 
+5..6 A: 8 
+6..7 A: 7 
+MyCenters: 15 MaxPoints: 32 MyPoints: 480 
+Range of distances to the center: 1.68942416225174..6.8220680881973 
+Saved bounty in: ./strainer-p32-FE-MN.ssv
+ALL DONE in 0.05 min
+2017:09:27 11:26

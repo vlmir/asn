@@ -1,0 +1,26 @@
+CC=mpicc
+#CFLAGS=-std=c11
+CFLAGS+=-MMD   # dependency generation magic
+CFLAGS+=-I./inc
+CFLAGS+=-I./ext
+CFLAGS+=-pg -O0 -Wall
+LDLIBS=-lm
+job=xpider
+sdir=ext/
+srcs=$(sdir)jacobi.c $(sdir)hmatrix.c $(sdir)mputils.c $(sdir)utils.c $(job).c
+objs=$(srcs:.c=.o)
+deps=$(objs:.o=.d)
+$(job) : $(objs)
+-include $(deps)  # this makes magic happen
+
+
+N=2
+P=4
+W=0
+run :
+	mpirun -n $N ./$(job) -p $P -w $W   \
+		-x ./strainer-p32-MN.ssv -y ./strainer-p32-MN.ssv \
+		-b ./$(job)-n$N-p$P-w$W.bin -t $(job)-n$N-p$P-w$W.ssv 2>$(job).err
+.PHONY : clean # in case file 'clean' exists in the path
+clean :
+	rm $(objs) $(deps) $(job) $(job)-* *.err

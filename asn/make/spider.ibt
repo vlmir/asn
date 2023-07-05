@@ -1,0 +1,18 @@
+CC=mpicc
+IDIR =./inc
+LDIR =./lib
+ODIR=obj
+OPTS=-pg -O0 -Wall
+CFLAGS=-I$(IDIR) -I$(LDIR)
+LIBS=-lm
+JOB=spider
+$(JOB).a: ./ext/$(JOB).c
+	$(CC) $(OPTS) -o $@ $^ $(CFLAGS) $(LIBS)
+
+XOPTS=-p2w0
+run:
+	mpirun -n 2 ./$(JOB).a -p 2 -w 0  \
+		-x ./strainer-p4.tsv -y ./strainer-p4.tsv \
+		-b ./$(JOB)$(XOPTS).bin -t $(JOB)$(XOPTS).ssv 2>$(JOB).err
+clean:
+	rm $(JOB).a $(JOB).err gmon.out

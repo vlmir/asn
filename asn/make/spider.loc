@@ -1,0 +1,26 @@
+CC=mpicc
+CFLAGS=-std=c11 # 2017-08: the latest standard
+CFLAGS+=-MMD  # generate dependency .d files
+CFLAGS+=-I./inc
+CFLAGS+=-pg -O0 -Wall
+LDLIBS=-lm
+job=spider
+sdir=ext
+srcs=$(job).c $(sdir)/hmatrix.c $(sdir)/jacobi.c $(sdir)/mputil.c $(sdir)/subspider.c $(sdir)/util.c
+objs=$(srcs:.c=.o)
+deps=$(objs:.o=.d)
+$(job) : $(objs)
+-include $(deps)
+# %: %.o # all targerts for all objects
+# obj/%.o: %.c # to be tested
+
+N=2
+P=4
+W=0
+run :
+	mpirun -n $N ./$(job) -p $P -w $W\
+		-x ./strainer-p32-MN.ssv -y ./strainer-p32-MN.ssv \
+		-b ./$(job)-n$N-p$P-w$W.bin -t $(job)-n$N-p$P-w$W.ssv 2>$(job).err
+.PHONY : clean # in case file 'clean' exists in the path
+clean :
+	rm $(objs) $(deps) $(job) $(job)-* *.err
